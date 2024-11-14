@@ -1,6 +1,6 @@
 import numpy as np
-from Dataset import Dataset
-from ModelFactory import ModelFactory
+from util.Dataset import Dataset
+from util.ModelFactory import ModelFactory
 
 
 # TODO: load actual data
