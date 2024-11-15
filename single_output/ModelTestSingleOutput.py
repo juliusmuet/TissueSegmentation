@@ -7,6 +7,7 @@ import torch
     An example neural network with only one output
 """
 
+
 class ModelTestSingleOutput(nn.Module):
     def __init__(self, input_shape):
         super().__init__()
@@ -22,5 +23,5 @@ class ModelTestSingleOutput(nn.Module):
         return x
 
     @staticmethod
-    def toString():
+    def to_string():
         return "test_single_output"

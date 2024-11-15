@@ -1,5 +1,5 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
 
 class ModelMuscleJulius(nn.Module):
@@ -32,7 +32,7 @@ class ModelMuscleJulius(nn.Module):
         return x
 
     @staticmethod
-    def toString():
+    def to_string():
         return "muscle_julius"
 
 
@@ -45,7 +45,7 @@ class ModelMusclePero(nn.Module):
         pass
 
     @staticmethod
-    def toString():
+    def to_string():
         return "muscle_pero"
 
 
@@ -58,5 +58,5 @@ class ModelMuscleMarla(nn.Module):
         pass
 
     @staticmethod
-    def toString():
+    def to_string():
         return "muscle_marla"
