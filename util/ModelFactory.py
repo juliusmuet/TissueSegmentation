@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 class ModelFactory:
     def __init__(self, dataset_train, dataset_test):
-        self.available_models = [ModelMuscleJulius, ModelMusclePero, ModelMuscleMarla]
+        self.available_models = [ModelMuscleJulius1, ModelMuscleJulius2, ModelMusclePero, ModelMuscleMarla]
         self.available_model_names = [model.to_string() for model in self.available_models]
         self.models_dict = {model.to_string(): model for model in self.available_models}
 

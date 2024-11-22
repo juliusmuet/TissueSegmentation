@@ -18,14 +18,17 @@ factory = ModelFactory(dataset_train, dataset_test)  # create model factory base
 available_models = factory.get_available_model_types()  # get list of implemented models
 
 # select and train model
-model_muscle_julius = factory.create_model(available_models[0])
-#model_muscle_pero = factory.create_model(available_models[1])
-#model_muscle_marla = factory.create_model(available_models[2])
+model_muscle_julius_1 = factory.create_model(available_models[0])
+model_muscle_julius_2 = factory.create_model(available_models[1])
+#model_muscle_pero = factory.create_model(available_models[2])
+#model_muscle_marla = factory.create_model(available_models[3])
 
 # evaluate model
-model_muscle_julius.evaluate()
+model_muscle_julius_1.evaluate()
+model_muscle_julius_2.evaluate()
 #model_muscle_pero.evaluate()
 #model_muscle_marla.evaluate()
 
 # predict labels
-logging.info(f"Predicted labels for inputted data: {model_muscle_julius.predict(np.random.rand(3, 420))}")
+logging.info(f"Predicted labels for inputted data with {available_models[0]}: {model_muscle_julius_1.predict(np.random.rand(3, 420))}")
+logging.info(f"Predicted labels for inputted data with {available_models[1]}: {model_muscle_julius_2.predict(np.random.rand(3, 420))}")
