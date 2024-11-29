@@ -9,7 +9,34 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Model:
+    """
+    A wrapper class for managing a PyTorch model with MULTIPLE OUTPUT NEURONS, including training,
+    evaluation, prediction, and saving/loading model parameters.
+
+    Attributes:
+        device (torch.device): The device on which the model is executed (CPU or GPU).
+        model (torch.nn.Module): The PyTorch model instance.
+        optimizer (torch.optim.Optimizer): Optimizer for model training.
+        input_shape (tuple): Shape of the input data.
+        output_shape (tuple): Shape of the output data (labels).
+        dataset_train (Dataset): Training dataset object.
+        dataset_test (Dataset): Testing dataset object.
+        loader_train (DataLoader): DataLoader for the training dataset.
+        loader_test (DataLoader): DataLoader for the testing dataset.
+        performance (float): Model performance (accuracy) on the test set.
+    """
+
     def __init__(self, model, dataset_train, dataset_test, input_shape, output_shape):
+        """
+        Initializes the Model class with the specified parameters.
+
+        Args:
+            model (class): The model class to instantiate.
+            dataset_train (Dataset): The training dataset object.
+            dataset_test (Dataset): The testing dataset object.
+            input_shape (tuple): Shape of the input data.
+            output_shape (tuple): Shape of the output data (labels).
+        """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model(input_shape, output_shape).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters())
@@ -27,6 +54,16 @@ class Model:
         self.performance = 0
 
     def __call__(self, _input):
+        """
+        Makes predictions using the model with the given input data.
+
+        Args:
+            _input (torch.Tensor): Input data for prediction.
+
+        Returns:
+            torch.Tensor or None: Model predictions if the input shape matches,
+                                   otherwise None with an error logged.
+        """
         if _input.shape == self.input_shape:
             return self.model(_input)
         else:
@@ -34,6 +71,15 @@ class Model:
             return None
 
     def train(self, criterion, epochs, batch_size, save_dir='model_parameters'):
+        """
+        Trains the model using the specified loss function, number of epochs, and batch size.
+
+        Args:
+            criterion (nn.Module): The loss function for training.
+            epochs (int): Number of training epochs.
+            batch_size (int): Batch size for the DataLoader.
+            save_dir (str, optional): Directory to save model parameters after training. Defaults to 'model_parameters'.
+        """
         if self.loader_train is None or self.loader_test is None:
             self.loader_train = self.dataset_train.create_dataloader(batch_size)
             self.loader_test = self.dataset_test.create_dataloader(batch_size)
@@ -61,6 +107,12 @@ class Model:
         logging.info(f"Model parameters saved to {save_path}")
 
     def evaluate(self):
+        """
+        Evaluates the model on the test dataset and calculates accuracy.
+
+        Returns:
+            float: The accuracy of the model on the test set.
+        """
         self.model.eval()
 
         correct = 0
@@ -82,6 +134,15 @@ class Model:
         return self.performance
 
     def predict(self, data):
+        """
+        Makes predictions on new data using the trained model.
+
+        Args:
+            data (np.ndarray or torch.Tensor): Input data for prediction.
+
+        Returns:
+            np.ndarray: Predicted class indices as a NumPy array.
+        """
         self.model.eval()
 
         data = torch.tensor(data, dtype=torch.float32).to(self.device)

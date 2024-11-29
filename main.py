@@ -1,34 +1,40 @@
+import os
 import numpy as np
-from util.Dataset import LargeDataset, get_train_test_indices
+from util.Dataset import *
 from util.ModelFactory import ModelFactory
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-spectra = np.random.rand(1000, 420) # Beispiel Spektrum
-labels = np.random.randint(0, 2, size=(1000, 2))    # Beispiel Labels
-
+# load data and create train and test data set
+# TODO: change to actual directory names
+spectra, labels = load_and_merge_two_directories("../TestData/muscle", "../TestData/other")
 indices_train, indices_test = get_train_test_indices(spectra.shape[0])
 dataset_train = LargeDataset(spectra, labels, indices_train)
 dataset_test = LargeDataset(spectra, labels, indices_test)
 
-factory = ModelFactory(dataset_train, dataset_test)  # create model factory based on given datasets
+# create model factory based on given datasets
+factory = ModelFactory(dataset_train, dataset_test)
 
-available_models = factory.get_available_model_types()  # get list of implemented models
+# get list of implemented models
+available_models = factory.get_available_model_types()
 
-# select and train model
+# select and train models
 model_muscle_julius_1 = factory.create_model(available_models[0])
 model_muscle_julius_2 = factory.create_model(available_models[1])
 #model_muscle_pero = factory.create_model(available_models[2])
 #model_muscle_marla = factory.create_model(available_models[3])
 
-# evaluate model
+# evaluate models
 model_muscle_julius_1.evaluate()
 model_muscle_julius_2.evaluate()
 #model_muscle_pero.evaluate()
 #model_muscle_marla.evaluate()
 
 # predict labels
-logging.info(f"Predicted labels for inputted data with {available_models[0]}: {model_muscle_julius_1.predict(np.random.rand(3, 420))}")
-logging.info(f"Predicted labels for inputted data with {available_models[1]}: {model_muscle_julius_2.predict(np.random.rand(3, 420))}")
+# TODO: actual data for prediction instead of random values
+#logging.info(f"Predicted labels for inputted data with {available_models[0]}: {model_muscle_julius_1.predict(np.random.rand(3, 427))}")
+#logging.info(f"Predicted labels for inputted data with {available_models[1]}: {model_muscle_julius_2.predict(np.random.rand(3, 427))}")
