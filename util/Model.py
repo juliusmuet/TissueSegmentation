@@ -70,7 +70,36 @@ class Model:
             logging.error("Input shape does not match expected input shape of model")
             return None
 
-    def train(self, criterion, epochs, batch_size, save_dir='model_parameters'):
+    def _calculate_accuracy(self, dataloader):
+        """
+        Helper function to calculate accuracy on a given dataloader.
+
+        Args:
+            dataloader (DataLoader): The DataLoader to evaluate.
+
+        Returns:
+            float: Accuracy percentage.
+        """
+        self.model.eval()
+
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for X_batch, y_batch in dataloader:
+                X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
+
+                y_pred = self.model(X_batch)
+                _, predicted = torch.max(y_pred.data, 1)
+                _, actual = torch.max(y_batch, 1)
+
+                total += y_batch.size(0)
+                correct += (predicted == actual).sum().item()
+
+        accuracy = 100 * correct / total
+        return accuracy
+
+    def train(self, criterion, epochs, batch_size, save_dir='model_parameters', evaluate_during_training=True):
         """
         Trains the model using the specified loss function, number of epochs, and batch size.
 
@@ -79,6 +108,7 @@ class Model:
             epochs (int): Number of training epochs.
             batch_size (int): Batch size for the DataLoader.
             save_dir (str, optional): Directory to save model parameters after training. Defaults to 'model_parameters'.
+            evaluate_during_training (bool, optional): If True, evaluates the model on train and test datasets after each epoch. Defaults to True.
         """
         if self.loader_train is None or self.loader_test is None:
             self.loader_train = self.dataset_train.create_dataloader(batch_size)
@@ -86,7 +116,7 @@ class Model:
 
         self.model.train()
 
-        for _ in tqdm(range(epochs), desc="Training: "):
+        for epoch in tqdm(range(epochs), desc="Training: "):
             for X_batch, y_batch in self.loader_train:
                 X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
 
@@ -99,12 +129,18 @@ class Model:
                 loss.backward()
                 self.optimizer.step()
 
+            # Evaluate the model if parameter is set
+            if evaluate_during_training:
+                train_accuracy = self._calculate_accuracy(self.loader_train)
+                test_accuracy = self._calculate_accuracy(self.loader_test)
+                logging.info(f"Epoch {epoch + 1} - Train Accuracy: {train_accuracy:.2f}%, Test Accuracy: {test_accuracy:.2f}%")
+
         # Create a timestamped file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         save_path = os.path.join(save_dir, f"model_{self.model.to_string()}_{timestamp}.pth")
         os.makedirs(save_dir, exist_ok=True)    # Ensure the save directory exists
         torch.save(self.model.state_dict(), save_path)  # Save the model parameters
-        logging.info(f"Model parameters saved to {save_path}")
+        logging.info(f"Model parameters saved to {save_path} \n")
 
     def evaluate(self):
         """
@@ -113,23 +149,11 @@ class Model:
         Returns:
             float: The accuracy of the model on the test set.
         """
-        self.model.eval()
+        if self.loader_train is None or self.loader_test is None:
+            logging.info(f"Train the model before evaluation")
+            return 0.0
 
-        correct = 0
-        total = 0
-
-        with torch.no_grad():
-            for X_batch, y_batch in self.loader_test:
-                X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
-
-                y_pred = self.model(X_batch)
-                _, predicted = torch.max(y_pred.data, 1)
-                _, actual = torch.max(y_batch, 1)
-
-                total += y_batch.size(0)
-                correct += (predicted == actual).sum().item()
-
-        self.performance = 100 * correct / total
+        self.performance = self._calculate_accuracy(self.loader_test)
         logging.info(f'Accuracy of the network {self.model.to_string()} on the test set: {self.performance:.2f}%')
         return self.performance
 

@@ -112,7 +112,7 @@ def load_and_label_npy(directory, is_muscle):
     for filename in os.listdir(directory):
         if filename.endswith('.npy'):  # Process only .npy files
             file_path = os.path.join(directory, filename)
-            print(f"Loading {file_path}")
+            logging.info(f"Loading {file_path}")
             # Load the .npy file and append to the list
             array = np.load(file_path)
             arrays.append(array)
@@ -164,6 +164,8 @@ def load_and_merge_two_directories(dir_muscle, dir_other, shuffle=True, seed=42)
         merged_data = merged_data[permutation]
         merged_labels = merged_labels[permutation]
 
+    logging.info(f"Loaded {merged_data.shape[0]} datapoints of dimension {merged_data.shape[1]}")
+    logging.info(f"Loaded {merged_labels.shape[0]} labels of dimension {merged_labels.shape[1]} \n")
     return merged_data, merged_labels
 
 
