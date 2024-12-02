@@ -116,6 +116,9 @@ class Model:
 
         self.model.train()
 
+        prev_train_accuracy = None
+        prev_test_accuracy = None
+
         for epoch in tqdm(range(epochs), desc="Training: "):
             for X_batch, y_batch in self.loader_train:
                 X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
@@ -133,7 +136,16 @@ class Model:
             if evaluate_during_training:
                 train_accuracy = self._calculate_accuracy(self.loader_train)
                 test_accuracy = self._calculate_accuracy(self.loader_test)
-                logging.info(f"Epoch {epoch + 1} - Train Accuracy: {train_accuracy:.2f}%, Test Accuracy: {test_accuracy:.2f}%")
+                logging.info(f"Epoch {epoch + 1} - Train Accuracy: {train_accuracy:.3f}%, Test Accuracy: {test_accuracy:.3f}%")
+
+                # Stop training if train or test accuracy decreases
+                if prev_train_accuracy is not None and prev_test_accuracy is not None:
+                    if train_accuracy < prev_train_accuracy or test_accuracy < prev_test_accuracy:
+                        logging.info("Accuracy decreased. Stopping training...")
+                        break
+
+                prev_train_accuracy = train_accuracy
+                prev_test_accuracy = test_accuracy
 
         # Create a timestamped file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
