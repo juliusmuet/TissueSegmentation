@@ -11,7 +11,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # load data and create train and test data set
 # TODO: change to actual directory names
-spectra, labels = load_and_merge_two_directories("../TestData/muscle", "../TestData/other")
+spectra, labels = load_and_merge_two_directories("../../bigdata_data/muscle_spectra", "../../bigdata_data/control_spectra")
 indices_train, indices_test = get_train_test_indices(spectra.shape[0])
 dataset_train = LargeDataset(spectra, labels, indices_train)
 dataset_test = LargeDataset(spectra, labels, indices_test)
