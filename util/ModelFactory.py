@@ -37,7 +37,7 @@ class ModelFactory:
         self.dataset_test = dataset_test
         self.input_shape, self.output_shape = self.dataset_train.get_io()
 
-    def create_model(self, model_type, criterion=nn.CrossEntropyLoss(), train=True, epochs=20, batch_size=32):
+    def create_model(self, model_type, criterion=nn.CrossEntropyLoss(), train=True, epochs=10, batch_size=32):
         """
         Creates and optionally trains a model based on the specified type.
 
@@ -45,7 +45,7 @@ class ModelFactory:
             model_type (str): The name of the model to create.
             criterion (nn.Module, optional): The loss function to use for training. Defaults to CrossEntropyLoss.
             train (bool, optional): If True, trains the model immediately after creation. Defaults to True.
-            epochs (int, optional): Number of epochs for training. Defaults to 20.
+            epochs (int, optional): Number of epochs for training. Defaults to 10.
             batch_size (int, optional): Batch size for training. Defaults to 32.
 
         Returns:
