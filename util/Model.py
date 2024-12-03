@@ -1,5 +1,6 @@
 import os
 import torch
+import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 from datetime import datetime
@@ -159,13 +160,15 @@ class Model:
 
     def predict(self, data):
         """
-        Makes predictions on new data using the trained model.
+        Makes predictions on new data using the trained model and calculates probabilities.
 
         Args:
             data (np.ndarray or torch.Tensor): Input data for prediction.
 
         Returns:
-            np.ndarray: Predicted class indices as a NumPy array.
+            tuple: A tuple containing:
+                - np.ndarray: Predicted class indices as a NumPy array.
+                - np.ndarray: Probabilities for each class as a NumPy array.
         """
         self.model.eval()
 
@@ -173,6 +176,7 @@ class Model:
 
         with torch.no_grad():
             outputs = self.model(data)
-            _, predicted = torch.max(outputs, 1)
+            probabilities = torch.softmax(outputs, dim=1)
+            _, predicted = torch.max(probabilities, 1)
 
-        return predicted.cpu().numpy()
+        return predicted.cpu().numpy(), probabilities.cpu().numpy()

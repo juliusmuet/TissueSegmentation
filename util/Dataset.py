@@ -90,83 +90,105 @@ class LargeDataset(Dataset):
         return DataLoader(self, batch_size=batch_size, shuffle=True)
 
 
-def load_and_label_npy(directory, is_muscle):
+def load_data_with_labels(base_path, shuffle=True, seed=42):
     """
-    Loads .npy files from the given directory, concatenates them along the first dimension,
-    and generates one-hot encoded labels.
+    Loads .npy files from subdirectories under the base path, assigns one-hot encoded labels,
+    and optionally shuffles the data.
 
     Args:
-        directory (str): Path to the directory containing .npy files.
-        is_muscle (bool): If True, generates labels [1, 0] (muscle).
-                          If False, generates labels [0, 1] (not a muscle).
-
-    Returns:
-        tuple: A tuple containing:
-               - concatenated_array (np.ndarray): The concatenated numpy array.
-               - labels (np.ndarray): One-hot encoded labels for the data.
-    """
-    # Initialize an empty list to store arrays
-    arrays = []
-
-    # Iterate through the files in the directory
-    for filename in os.listdir(directory):
-        if filename.endswith('.npy'):  # Process only .npy files
-            file_path = os.path.join(directory, filename)
-            logging.info(f"Loading {file_path}")
-            # Load the .npy file and append to the list
-            array = np.load(file_path)
-            arrays.append(array)
-
-    if not arrays:
-        raise ValueError(f"No .npy files found in the directory: {directory}")
-
-    # Concatenate all arrays along the first dimension
-    concatenated_array = np.concatenate(arrays, axis=0)
-
-    # Generate one-hot encoded labels
-    label_value = [1, 0] if is_muscle else [0, 1]
-    labels = np.tile(label_value, (concatenated_array.shape[0], 1))
-
-    return concatenated_array, labels
-
-
-def load_and_merge_two_directories(dir_muscle, dir_other, shuffle=True, seed=42):
-    """
-    Loads data from two directories, assigns one-hot encoded labels (muscle=[1,0], not muscle=[0,1]),
-    concatenates both data and labels, and shuffles them if specified.
-
-    Args:
-        dir_muscle (str): Path to the first directory (muscle).
-        dir_other (str): Path to the second directory (not muscle).
-        shuffle (bool): Whether to shuffle the data and labels after concatenation.
+        base_path (str): Path to the base directory containing labeled subdirectories.
+        shuffle (bool): Whether to shuffle the data and labels after loading.
         seed (int or None): Random seed for shuffling. If None, no seed is set.
 
     Returns:
         tuple: A tuple containing:
                - final_data (np.ndarray): Concatenated and optionally shuffled training data.
                - final_labels (np.ndarray): Corresponding one-hot encoded labels, shuffled if specified.
+               - label_mapping (dict): Mapping of one-hot encoded labels to subdirectory names.
+
+    Raises:
+        ValueError: If no subdirectories found in base directory
     """
-    # Load and label data from the first directory (muscle)
-    data_one, labels_one = load_and_label_npy(dir_muscle, is_muscle=True)
+    data = []
+    labels = []
+    label_mapping = {}
+    subdirs = sorted([d for d in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, d))])
 
-    # Load and label data from the second directory (not muscle)
-    data_two, labels_two = load_and_label_npy(dir_other, is_muscle=False)
+    if not subdirs:
+        raise ValueError(f"No subdirectories found in the base directory: {base_path}")
 
-    # Concatenate data and labels from both directories
-    merged_data = np.concatenate([data_one, data_two], axis=0)
-    merged_labels = np.concatenate([labels_one, labels_two], axis=0)
+    for idx, subdir in enumerate(subdirs):
+        one_hot_label = np.zeros(len(subdirs))
+        one_hot_label[idx] = 1
+        label_mapping[tuple(one_hot_label)] = subdir
+
+        subdir_path = os.path.join(base_path, subdir)
+        arrays = []
+
+        for filename in os.listdir(subdir_path):
+            if filename.endswith('.npy'):
+                file_path = os.path.join(subdir_path, filename)
+                logging.info(f"Loading {file_path}")
+                array = np.load(file_path)
+                arrays.append(array)
+
+        if arrays:
+            concatenated_array = np.concatenate(arrays, axis=0)
+            data.append(concatenated_array)
+            # Repeat one-hot label for all samples in the subdirectory
+            labels.append(np.tile(one_hot_label, (concatenated_array.shape[0], 1)))
+        else:
+            logging.warning(f"No .npy files found in the subdirectory: {subdir_path}")
+
+    # Concatenate all data and labels
+    final_data = np.concatenate(data, axis=0)
+    final_labels = np.concatenate(labels, axis=0)
 
     if shuffle:
         if seed is not None:
             np.random.seed(seed)
-        # Create a permutation of indices and apply it to both data and labels
-        permutation = np.random.permutation(merged_data.shape[0])
-        merged_data = merged_data[permutation]
-        merged_labels = merged_labels[permutation]
+        permutation = np.random.permutation(final_data.shape[0])
+        final_data = final_data[permutation]
+        final_labels = final_labels[permutation]
 
-    logging.info(f"Loaded {merged_data.shape[0]} datapoints of dimension {merged_data.shape[1]}")
-    logging.info(f"Loaded {merged_labels.shape[0]} labels of dimension {merged_labels.shape[1]} \n")
-    return merged_data, merged_labels
+    logging.info(f"Loaded {final_data.shape[0]} datapoints of dimension {final_data.shape[1]}")
+    logging.info(f"Loaded {final_labels.shape[0]} labels of dimension {final_labels.shape[1]}")
+
+    return final_data, final_labels, label_mapping
+
+
+def decode_label_indices(label_indices, label_mapping):
+    """
+    Decodes multiple label indices to their corresponding strings using a one-hot encoded dictionary.
+
+    Args:
+        label_indices (list of int): A list of indices where each index represents the position
+                                     in the one-hot encoded tuples where the value is 1.
+        label_mapping (dict): A dictionary mapping one-hot encoded tuples (keys) to corresponding strings (values).
+
+    Returns:
+        list of str: A list of strings corresponding to the one-hot encoded tuples with 1s at the specified indices.
+
+    Example:
+        label_mapping = {
+            (1, 0, 0): "First",
+            (0, 1, 0): "Second",
+            (0, 0, 1): "Third"
+        }
+        decode_label_indices([0, 2], label_mapping)  # Returns ["First", "Third"]
+    """
+    # List to store the results
+    results = []
+
+    # Iterate through each index in the list of label indices
+    for label_index in label_indices:
+        # Iterate through the dictionary to find the corresponding tuple
+        for one_hot_tuple, string in label_mapping.items():
+            if one_hot_tuple[label_index] == 1:  # Check if the value at the index is 1
+                results.append(string)  # Add the corresponding string to results
+                break  # Exit the loop once a match is found for this index
+
+    return results
 
 
 def get_train_test_indices(total_size, test_size=0.2):

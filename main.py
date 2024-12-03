@@ -11,7 +11,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # load data and create train and test data set
 # TODO: change to actual directory names
-spectra, labels = load_and_merge_two_directories("../../bigdata_data/muscle_spectra", "../../bigdata_data/control_spectra")
+spectra, labels, mapping = load_data_with_labels("../../bigdata_data")
+logging.info(f"Mapping: {mapping}")
 indices_train, indices_test = get_train_test_indices(spectra.shape[0])
 dataset_train = LargeDataset(spectra, labels, indices_train)
 dataset_test = LargeDataset(spectra, labels, indices_test)
@@ -36,5 +37,13 @@ model_muscle_julius_2.evaluate()
 
 # predict labels
 # TODO: actual data for prediction instead of random values
-#logging.info(f"Predicted labels for inputted data with {available_models[0]}: {model_muscle_julius_1.predict(np.random.rand(3, 427))}")
-#logging.info(f"Predicted labels for inputted data with {available_models[1]}: {model_muscle_julius_2.predict(np.random.rand(3, 427))}")
+"""
+predicted_labels_model_1, probabilities_1 = model_muscle_julius_1.predict(np.random.rand(3, 427))
+predicted_labels_model_2, probabilities_2 = model_muscle_julius_2.predict(np.random.rand(3, 427))
+logging.info(f"Predictions for inputted data with {available_models[0]}: \n"
+             f"{probabilities_1} : \n"
+             f"   {predicted_labels_model_1} : {decode_label_indices(predicted_labels_model_1, mapping)}")
+logging.info(f"Predictions for inputted data with {available_models[1]}: \n"
+             f"{probabilities_2} : \n"
+             f"   {predicted_labels_model_2} : {decode_label_indices(predicted_labels_model_2, mapping)}")
+"""
