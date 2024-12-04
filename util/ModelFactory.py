@@ -29,7 +29,7 @@ class ModelFactory:
             dataset_train (Dataset): The training dataset object.
             dataset_test (Dataset): The testing dataset object.
         """
-        self.available_models = [ModelMuscleJulius1, ModelMuscleJulius2, ModelMusclePero, ModelMuscleMarla]
+        self.available_models = [ModelMuscle1, ModelMuscle2]
         self.available_model_names = [model.to_string() for model in self.available_models]
         self.models_dict = {model.to_string(): model for model in self.available_models}
 
@@ -65,28 +65,25 @@ class ModelFactory:
 
         return model
 
-    def create_model_from_save(self, load_path):
+    def create_model_from_save(self, load_path, model_name):
         """
-        Creates a model by loading its parameters from a saved file.
+        Creates a model specified by model_name by loading its parameters from a saved file.
 
         Args:
             load_path (str): Path to the file containing the saved model parameters.
+            model_name (str): Name of the model to load
 
         Returns:
             Model: The loaded model instance with parameters restored.
                    Returns None if the file does not exist.
         """
         if os.path.exists(load_path):
-
-            parts = load_path.split('_')
-            model_name = '_'.join(parts[1:3])
-
-            model = Model(ModelFactory.get_model_by_name(model_name), self.dataset_train, self.dataset_test, self.input_shape, self.output_shape)
+            model = Model(self.get_model_by_name(model_name), self.dataset_train, self.dataset_test, self.input_shape, self.output_shape)
             model.model.load_state_dict(torch.load(load_path))
-            print(f"Model parameters loaded from {load_path}")
+            logging.info(f"Model parameters loaded from {load_path}")
             return model
         else:
-            print(f"No saved model found at {load_path}")
+            logging.warning(f"No saved model found at {load_path}")
 
     def get_available_model_types(self):
         """

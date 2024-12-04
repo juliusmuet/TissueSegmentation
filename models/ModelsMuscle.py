@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class ModelMuscleJulius1(nn.Module):
+class ModelMuscle1(nn.Module):
 
     def __init__(self, input_shape, output_shape):
         super().__init__()
@@ -33,10 +33,10 @@ class ModelMuscleJulius1(nn.Module):
 
     @staticmethod
     def to_string():
-        return "muscle_julius_1"
+        return "muscle_1"
 
 
-class ModelMuscleJulius2(nn.Module):
+class ModelMuscle2(nn.Module):
 
     def __init__(self, input_shape, output_shape):
         super().__init__()
@@ -75,30 +75,4 @@ class ModelMuscleJulius2(nn.Module):
 
     @staticmethod
     def to_string():
-        return "muscle_julius_2"
-
-
-class ModelMusclePero(nn.Module):
-
-    def __init__(self, input_shape, output_shape):
-        super().__init__()
-
-    def forward(self, x):
-        pass
-
-    @staticmethod
-    def to_string():
-        return "muscle_pero"
-
-
-class ModelMuscleMarla(nn.Module):
-
-    def __init__(self, input_shape, output_shape):
-        super().__init__()
-
-    def forward(self, x):
-        pass
-
-    @staticmethod
-    def to_string():
-        return "muscle_marla"
+        return "muscle_2"
