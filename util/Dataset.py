@@ -162,7 +162,7 @@ def decode_label_indices(label_indices, label_mapping):
     Decodes multiple label indices to their corresponding strings using a one-hot encoded dictionary.
 
     Args:
-        label_indices (list of int): A list of indices where each index represents the position
+        label_indices (list of int np.ndarray): A list of indices where each index represents the position
                                      in the one-hot encoded tuples where the value is 1.
         label_mapping (dict): A dictionary mapping one-hot encoded tuples (keys) to corresponding strings (values).
 

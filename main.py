@@ -2,6 +2,7 @@ import os
 import numpy as np
 from util.Dataset import *
 from util.ModelFactory import ModelFactory
+from util.LabelVisualiser import classify_image
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +35,13 @@ model_muscle_2.evaluate()
 
 # load trained models
 model_muscle_1 = factory.create_model_from_save("model_parameters/model_muscle_1_20241202_160015.pth", "muscle_1")
+
+# classify image
+# TODO: load actual data
+"""
+dummy_image_array = np.random.rand(10, 10, 427)
+classify_image(model_muscle_1, dummy_image_array, mapping, "output_model_1.png")
+"""
 
 # predict labels
 # TODO: actual data for prediction instead of random values
