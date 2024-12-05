@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -158,12 +159,13 @@ class Model:
         logging.info(f'Accuracy of the network {self.model.to_string()} on the test set: {self.performance:.2f}%')
         return self.performance
 
-    def predict(self, data):
+    def predict(self, data, batch_size=1024):
         """
         Makes predictions on new data using the trained model and calculates probabilities.
 
         Args:
             data (np.ndarray or torch.Tensor): Input data for prediction.
+            batch_size (int): Number of inputs to process in a single batch.
 
         Returns:
             tuple: A tuple containing:
@@ -171,12 +173,30 @@ class Model:
                 - np.ndarray: Probabilities for each class as a NumPy array.
         """
         self.model.eval()
+        num_pixels = data.shape[0]
+        all_predictions = []
+        all_probabilities = []
 
-        data = torch.tensor(data, dtype=torch.float32).to(self.device)
+        # Ensure input data is a PyTorch tensor
+        if not isinstance(data, torch.Tensor):
+            data = torch.tensor(data, dtype=torch.float32)
 
         with torch.no_grad():
-            outputs = self.model(data)
-            probabilities = torch.softmax(outputs, dim=1)
-            _, predicted = torch.max(probabilities, 1)
+            for start_idx in range(0, num_pixels, batch_size):
+                # Slice the batch
+                batch = data[start_idx:start_idx + batch_size].to(self.device)
 
-        return predicted.cpu().numpy(), probabilities.cpu().numpy()
+                # Predict on the batch
+                outputs = self.model(batch)
+                probabilities = torch.softmax(outputs, dim=1)
+                _, predicted = torch.max(probabilities, 1)
+
+                # Collect results
+                all_predictions.append(predicted.cpu().numpy())
+                all_probabilities.append(probabilities.cpu().numpy())
+
+        # Concatenate all results
+        all_predictions = np.concatenate(all_predictions, axis=0)
+        all_probabilities = np.concatenate(all_probabilities, axis=0)
+
+        return all_predictions, all_probabilities

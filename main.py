@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # load data and create train and test data set
 spectra, labels, mapping = load_data_with_labels("../../muscle_data/train_images")
