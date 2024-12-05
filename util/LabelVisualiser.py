@@ -1,3 +1,4 @@
+import logging
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,7 +34,7 @@ def load_and_classify_images(base_path, model, mapping):
         array = np.load(file_path)
 
         # Apply the provided function
-        classify_image(model, array, mapping, f"{base_path}/results/output_{model.to_string()}_{file_name}")
+        classify_image(model, array, mapping, f"{base_path}/results/output_{model.model.to_string()}_{file_name}")
 
 
 def classify_image(model, image_array, label_to_string, output_filename):
@@ -46,6 +47,8 @@ def classify_image(model, image_array, label_to_string, output_filename):
     - label_to_string (dict): Dictionary for mapping of one-hot encode to string value.
     - output_filename (str): The name of the file where the visualized image will be saved.
     """
+    logging.info(f"Classifying {output_filename}")
+
     # Get the original image dimensions
     height, width, depth = image_array.shape
 
