@@ -1,6 +1,39 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from util.Dataset import decode_label_indices
+
+
+def load_and_classify_images(base_path, model, mapping):
+    """
+    Loads .npy files from a directory, classifies their content using a model,
+    and saves the classification results in an image.
+
+    Args:
+        base_path (str): The directory path containing .npy files to process.
+        model (Model): The PyTorch model instance.
+        mapping (dict): Dictionary for mapping of one-hot encode to string value.
+
+    Raises:
+        ValueError: If the provided `base_path` is not a valid directory.
+    """
+    # Ensure the directory exists
+    if not os.path.isdir(base_path):
+        raise ValueError(f"Provided path '{base_path}' is not a valid directory.")
+
+    # List all .npy files in the directory
+    npy_files = [f for f in os.listdir(base_path) if f.endswith('.npy')]
+
+    for npy_file in npy_files:
+        # Get the file name without extension
+        file_name = os.path.splitext(npy_file)[0]
+
+        # Load the numpy array
+        file_path = os.path.join(base_path, npy_file)
+        array = np.load(file_path)
+
+        # Apply the provided function
+        classify_image(model, array, mapping, f"{base_path}/results/output_{model.to_string()}_{file_name}")
 
 
 def classify_image(model, image_array, label_to_string, output_filename):

@@ -2,7 +2,7 @@ import os
 import numpy as np
 from util.Dataset import *
 from util.ModelFactory import ModelFactory
-from util.LabelVisualiser import classify_image
+from util.LabelVisualiser import load_and_classify_images
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +11,7 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # load data and create train and test data set
-spectra, labels, mapping = load_data_with_labels("../../bigdata_data")
+spectra, labels, mapping = load_data_with_labels("../../muscle_data/train_images")
 logging.info(f"Mapping: {mapping}")
 indices_train, indices_test = get_train_test_indices(spectra.shape[0])
 dataset_train = LargeDataset(spectra, labels, indices_train)
@@ -35,13 +35,11 @@ model_muscle_2.evaluate()
 
 # load trained models
 model_muscle_1 = factory.create_model_from_save("model_parameters/model_muscle_1_20241202_160015.pth", "muscle_1")
+model_muscle_2 = factory.create_model_from_save("model_parameters/model_muscle_2_20241202_174920.pth", "muscle_2")
 
-# classify image
-# TODO: load actual data
-"""
-dummy_image_array = np.random.rand(10, 10, 427)
-classify_image(model_muscle_1, dummy_image_array, mapping, "output_model_1.png")
-"""
+# classify test images
+load_and_classify_images("../../muscle_data/test_images", model_muscle_1, mapping)
+load_and_classify_images("../../muscle_data/test_images", model_muscle_2, mapping)
 
 # predict labels
 # TODO: actual data for prediction instead of random values
