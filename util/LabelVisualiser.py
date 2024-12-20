@@ -2,6 +2,9 @@ import logging
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import getpass
+import smtplib
+from email.message import EmailMessage
 from util.Dataset import decode_label_indices
 
 
@@ -89,3 +92,51 @@ def classify_image(model, image_array, label_to_string, output_filename):
     # Save the visualized image
     plt.savefig(output_filename, bbox_inches='tight', pad_inches=0)
     plt.close()
+
+    # Send image via email
+    send_classified_image(output_filename)
+
+
+def send_classified_image(file_path):
+    """
+    Sends an email over web.de with a classified image attached.
+
+    Parameters:
+    - file_path (str): The path to the image file to be attached to the email.
+    - recipient_email (str): The email address of the recipient.
+    - sender_email (str): The email address of the sender.
+    - sender_password (str): The password for the sender's email account.
+
+    The function creates an email message, attaches the specified image file, and sends the email
+    using an SMTP server (configured for Gmail in this example). Logging is used to track success or failure.
+
+    Raises:
+    - Logs an error message if the email fails to send due to any exception.
+    """
+    try:
+        # Create the email message
+        msg = EmailMessage()
+        msg['Subject'] = f"Classified Image: {file_path}"
+        msg['From'] = sender_email
+        msg['To'] = recipient_email
+        msg.set_content(f"Please find attached the classified image: {file_path}.")
+
+        # Attach the image file
+        with open(file_path, 'rb') as img_file:
+            img_data = img_file.read()
+            msg.add_attachment(img_data, maintype='image', subtype='png', filename=file_path)
+
+        # Send the email
+        with smtplib.SMTP_SSL('smtp.web.de', 465) as smtp:
+            smtp.login(sender_email, sender_password)
+            smtp.send_message(msg)
+
+        logging.info(f"Email sent successfully to {recipient_email}")
+    except Exception as e:
+        logging.error(f"Failed to send email: {e}")
+
+
+# Get email data from keyboard input
+recipient_email = input("Enter the recipient's email address: ")
+sender_email = input("Enter the sender's email address: ")
+sender_password = getpass.getpass("Enter the sender's email password: ")
