@@ -24,6 +24,7 @@ factory = ModelFactory(dataset_train, dataset_test)
 # get list of implemented models
 available_models = factory.get_available_model_types()
 
+"""
 # select and train models
 model_1 = factory.create_model(available_models[0])
 model_2 = factory.create_model(available_models[1])
@@ -31,16 +32,20 @@ model_2 = factory.create_model(available_models[1])
 # evaluate models
 model_1.evaluate()
 model_2.evaluate()
-
 """
+
 # load trained models
-model_1 = factory.create_model_from_save("model_parameters/model_muscle_1_20241202_160015.pth", "muscle_1")
-model_2 = factory.create_model_from_save("model_parameters/model_muscle_2_20241202_174920.pth", "muscle_2")
+#model_1 = factory.create_model_from_save("model_parameters/model_muscle_1_20241202_160015.pth", "muscle_1")
+#model_2 = factory.create_model_from_save("model_parameters/model_muscle_2_20241202_174920.pth", "muscle_2")
+model_1 = factory.create_model_from_save("model_parameters/model_muscle_1_20241220_130424.pth", "muscle_1")
+model_2 = factory.create_model_from_save("model_parameters/model_muscle_2_20241220_132043.pth", "muscle_2")
 
 # classify test images
-load_and_classify_images("../../muscle_data/test_images", model_1, mapping)
-load_and_classify_images("../../muscle_data/test_images", model_2, mapping)
-"""
+#load_and_classify_images("../../first_training/test_images", model_1, mapping)
+#load_and_classify_images("../../first_training/test_images", model_2, mapping)
+load_and_classify_images("../../second_training/test_images", model_1, mapping)
+load_and_classify_images("../../second_training/test_images", model_2, mapping)
+
 
 # predict labels
 # TODO: actual data for prediction instead of random values
