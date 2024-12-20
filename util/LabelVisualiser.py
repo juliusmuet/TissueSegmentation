@@ -113,6 +113,7 @@ def send_classified_image(file_path):
     Raises:
     - Logs an error message if the email fails to send due to any exception.
     """
+    file_path = file_path + ".png"
     try:
         # Create the email message
         msg = EmailMessage()
